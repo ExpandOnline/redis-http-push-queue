@@ -4,7 +4,7 @@
   "description": "Listens to a specific redis queue and posts the payloady body to the payload endpoint.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "DEBUG=*:error NODE_DEV=production node index.js"
   },
   "author": "Expand Online",
   "license": "MIT",
