@@ -17,14 +17,19 @@ export default () => {
     request.post({
       json: true,
       url: message.endpoint,
-      body: message.args
+      body: message.args,
+      headers: config.get('headers')
     }, (err, res, body) => {
       if (err) {
         error(err);
         return;
       }
       const resMsg = `Got back statuscode ${res.statusCode} with body ${body}`;
-      res.statusCode >= 200 && res.statusCode <= 299 ? debug(resMsg) : error(resMsg);
+      if (res.statusCode >= 200 && res.statusCode <= 299) {
+        debug(resMsg);
+      } else {
+        error(resMsg);
+      }
     });
   });
   debug(`Subscribing to ${config.get('redis.queue')}`);
