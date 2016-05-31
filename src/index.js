@@ -24,7 +24,7 @@ export default () => {
         error(err);
         return;
       }
-      const resMsg = `Got back statuscode ${res.statusCode} with body ${body}`;
+      const resMsg = `Got back statuscode ${res.statusCode} with body ${JSON.stringify(body)}`;
       if (res.statusCode >= 200 && res.statusCode <= 299) {
         debug(resMsg);
       } else {
