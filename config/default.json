@@ -5,7 +5,9 @@
     "queue": "default",
     "retryCodes": [
       408, 503
-    ]
+    ],
+    "maxRetries": 5,
+    "errorWait": 1000
   },
   "headers": {}
 }
