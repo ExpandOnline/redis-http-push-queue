@@ -46,7 +46,6 @@ const runRequest = ({msg, retries}, callback) => request.post({
 });
 
 const run = wait => {
-  debug(`run with ${wait}`);
   setTimeout(() => {
     if (queue.length === 0) {
       run(1000);
