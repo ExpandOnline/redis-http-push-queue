@@ -4,7 +4,7 @@
   "description": "Listens to a specific redis queue and posts the payloady body to the payload endpoint.",
   "main": "index.js",
   "scripts": {
-    "start": "DEBUG=*:error NODE_ENV=production node index.js",
+    "start": "DEBUG=*:error,*:log NODE_ENV=production node index.js",
     "start-debug": "DEBUG=* NODE_ENV=production node index.js"
   },
   "author": "Expand Online",
