@@ -1,61 +1,54 @@
 'use strict';
-import request from 'request';
 import mkdebug from 'debug';
 import config from 'config';
-import {any, equals} from 'ramda';
+import {any, equals, curry, assoc} from 'ramda';
+import {doRequest} from './request.js';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
 
-const queue = [];
+const MAX_RETRIES = config.get('redis.maxRetries');
+const WAIT_ON_ERROR = config.get('redis.errorWait');
+
+const queue = {};
 
 const add = msg => {
-  queue.push({msg, retries: 0});
+  queue[msg.channel] = queue[msg.channel] || [];
+  queue[msg.channel].push({msg, retries: 0});
 };
 
-const runRequest = ({msg, retries}, callback) => request.post({
-  json: true,
-  url: msg.endpoint,
-  body: msg.args,
-  headers: config.get('headers')
-}, (err, res, body) => {
-  if (err) {
-    error(err);
-    return;
-  }
-  const resMsg =
-   `Got back statuscode ${res.statusCode} with body ${JSON.stringify(body)}`;
+const runRequest = ({msg, retries}, callback) => {
+  debug(`Handling ${msg.channel} message`);
 
-  if (res.statusCode >= 200 && res.statusCode <= 299) {
-    debug(resMsg);
-  } else {
-    error(resMsg);
-  }
-
-  if (any(equals(res.statusCode), config.get('redis.retryCodes'))) {
-    if (retries < config.get('redis.maxRetries')) {
-      queue.unshift({msg, retries: retries + 1});
-      callback(config.get('redis.errorWait'));
+  const response = doRequest(assoc('headers', config.get('headers'), msg));
+  response.on('response', function() {
+    if (any(equals(response.statusCode), config.get('redis.retryCodes'))) {
+      if (retries < MAX_RETRIES) {
+        queue[msg.channel].unshift({msg, retries: retries + 1});
+        callback(WAIT_ON_ERROR);
+      } else {
+        error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
+        callback(0);
+      }
     } else {
-      error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
       callback(0);
     }
-  } else {
-    callback(0);
-  }
-});
+  });
+};
 
-const run = wait => {
+const run = curry((channel, wait) => {
+  queue[channel] = queue[channel] || [];
+  const channelRun = run(channel);
+
   setTimeout(() => {
-    if (queue.length === 0) {
-      run(1000);
+    if (queue[channel].length === 0) {
+      channelRun(1000);
       return;
     }
-
-    const current = queue.shift();
-    runRequest(current, run);
+    const current = queue[channel].shift();
+    runRequest(current, channelRun);
   }, wait);
-};
+});
 
 export {add as add};
 export {run as run};
