@@ -3,7 +3,7 @@ import mkdebug from 'debug';
 import config from 'config';
 import redis from 'redis';
 import {run, add} from './stack';
-import {assoc, prop, indexBy} from 'ramda';
+import {assoc} from 'ramda';
 
 const debug = mkdebug('redis-http-push-queue:log');
 
@@ -13,13 +13,8 @@ export default () => {
   debug('Opening redis connection');
   const client = connect(config.get('redis.host'), config.get('redis.port'));
 
-  const channelMap = indexBy(prop('channel'), config.get('redis.queue'));
-
   client.on('message', (channel, message) => {
-    if (channelMap[channel].type === "sync") {
-      debug("Got sync message");
-      add(assoc('channel', channel, JSON.parse(message)));
-    }
+    add(assoc('channel', channel, JSON.parse(message)));
   });
 
   config.get('redis.queue').forEach(function(queue) {
