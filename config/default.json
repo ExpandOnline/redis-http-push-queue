@@ -2,7 +2,16 @@
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,
-    "queue": "default",
+    "queue": [
+      {
+        "channel": "syncQueue",
+        "type": "sync"
+      },
+      {
+        "channel": "anotherSyncQueue",
+        "type": "sync"
+      }
+    ],
     "retryCodes": [
       408, 503
     ],
