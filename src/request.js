@@ -1,6 +1,7 @@
 'use strict';
 import request from 'request';
 import mkdebug from 'debug';
+import fs from 'fs';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -9,7 +10,9 @@ export const doRequest = msg => request.post({
   json: true,
   url: msg.endpoint,
   body: msg.args,
-  headers: msg.headers
+  headers: msg.headers,
+  key: fs.readFileSync('ssl.key'),
+  cert: fs.readFileSync('ssl.crt')
 }, (err, res, body) => {
   if (err) {
     error(err);
