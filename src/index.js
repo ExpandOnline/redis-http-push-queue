@@ -4,6 +4,7 @@ import config from 'config';
 import redis from 'redis';
 import {run, add} from './stack';
 import {assoc} from 'ramda';
+require('ssl-root-cas').addFile('ssl.crt').inject();
 
 const debug = mkdebug('redis-http-push-queue:log');
 
@@ -14,6 +15,7 @@ export default () => {
   const client = connect(config.get('redis.host'), config.get('redis.port'));
 
   client.on('message', (channel, message) => {
+    debug(message);
     add(assoc('channel', channel, JSON.parse(message)));
   });
 
