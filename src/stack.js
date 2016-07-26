@@ -19,21 +19,25 @@ const add = msg => {
 
 const runRequest = ({msg, retries}, callback) => {
   debug(`Handling ${msg.channel} message`);
-
-  const response = doRequest(assoc('headers', config.get('headers'), msg));
-  response.on('response', function() {
-    if (any(equals(response.statusCode), config.get('redis.retryCodes'))) {
-      if (retries < MAX_RETRIES) {
-        queue[msg.channel].unshift({msg, retries: retries + 1});
-        callback(WAIT_ON_ERROR);
+  try {
+    const response = doRequest(assoc('headers', config.get('headers'), msg));
+    response.on('response', function() {
+      if (any(equals(response.statusCode), config.get('redis.retryCodes'))) {
+        if (retries < MAX_RETRIES) {
+          queue[msg.channel].unshift({msg, retries: retries + 1});
+          callback(WAIT_ON_ERROR);
+        } else {
+          error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
+          callback(0);
+        }
       } else {
-        error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
         callback(0);
       }
-    } else {
-      callback(0);
-    }
-  });
+    });
+  } catch(err) {
+    debug(`Message ${msg.channel} failed with error: ${err}`);
+    callback(0);
+  }
 };
 
 const run = curry((channel, wait) => {
