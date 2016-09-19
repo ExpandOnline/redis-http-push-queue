@@ -1,6 +1,7 @@
 'use strict';
 import request from 'request';
 import mkdebug from 'debug';
+import prettyjson from 'prettyjson';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -16,7 +17,7 @@ export const doRequest = msg => request.post({
     return;
   }
   const resMsg =
-   `Got back statuscode ${res.statusCode} with body ${JSON.stringify(body)}`;
+   `Got back statuscode ${res.statusCode} with body ${prettyjson.render(body)}`;
 
   if (res.statusCode >= 200 && res.statusCode <= 299) {
     debug(resMsg);

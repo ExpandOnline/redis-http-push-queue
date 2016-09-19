@@ -3,6 +3,7 @@ import mkdebug from 'debug';
 import config from 'config';
 import {any, equals, curry, assoc} from 'ramda';
 import {doRequest} from './request.js';
+import prettyjson from 'prettyjson';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -19,6 +20,8 @@ const add = msg => {
 
 const runRequest = ({msg, retries}, callback) => {
   debug(`Handling ${msg.channel} message`);
+  debug(`URI: ${msg.endpoint}`);
+  debug(`Contents: ${prettyjson.render(msg.args)}`);
   try {
     const response = doRequest(assoc('headers', config.get('headers'), msg));
     response.on('response', function() {
