@@ -24,8 +24,8 @@ const runRequest = ({msg, retries}, callback) => {
   debug(`Contents: ${prettyjson.render(msg.args)}`);
   try {
     const response = doRequest(assoc('headers', config.get('headers'), msg));
-    response.on('response', function() {
-      if (any(equals(response.statusCode), config.get('redis.retryCodes'))) {
+    response.on('response', function(res) {
+      if (any(equals(res.statusCode), config.get('redis.retryCodes'))) {
         if (retries < MAX_RETRIES) {
           queue[msg.channel].unshift({msg, retries: retries + 1});
           callback(WAIT_ON_ERROR);
