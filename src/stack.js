@@ -8,9 +8,6 @@ import prettyjson from 'prettyjson';
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
 
-const MAX_RETRIES = config.get('redis.maxRetries');
-const WAIT_ON_ERROR = config.get('redis.errorWait');
-
 const queue = {};
 
 const add = msg => {
@@ -23,12 +20,12 @@ const runRequest = ({msg, retries}, callback) => {
   debug(`URI: ${msg.endpoint}`);
   debug(`Contents: ${prettyjson.render(msg.args)}`);
   try {
-    const response = doRequest(assoc('headers', config.get('headers'), msg));
+    const response = doRequest(assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
     response.on('response', function(res) {
-      if (any(equals(res.statusCode), config.get('redis.retryCodes'))) {
-        if (retries < MAX_RETRIES) {
+      if (any(equals(res.statusCode), config.get(`redis.queue.${msg.channel}.retryCodes`))) {
+        if (retries < (config.get(`redis.queue.${msg.channel}.maxRetries`))) {
           queue[msg.channel].unshift({msg, retries: retries + 1});
-          callback(WAIT_ON_ERROR);
+          callback(config.get(`redis.queue.${msg.channel}.errorWait`));
         } else {
           error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
           callback(0);
@@ -37,7 +34,7 @@ const runRequest = ({msg, retries}, callback) => {
         callback(0);
       }
     });
-  } catch(err) {
+  } catch (err) {
     debug(`Message ${msg.channel} failed with error: ${err}`);
     callback(0);
   }

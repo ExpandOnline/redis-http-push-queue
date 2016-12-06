@@ -17,9 +17,9 @@ export default () => {
     add(assoc('channel', channel, JSON.parse(message)));
   });
 
-  config.get('redis.queue').forEach(function(queue) {
-    run(queue.channel, 0);
-    debug(`Subscribing to ${queue.channel}`);
-    client.subscribe(queue.channel);
+  Object.keys(config.get('redis.queue')).forEach(function(queue) {
+    run(queue, 0);
+    debug(`Subscribing to ${queue}`);
+    client.subscribe(queue);
   });
 };
