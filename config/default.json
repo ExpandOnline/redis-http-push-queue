@@ -3,7 +3,7 @@
     "host": "127.0.0.1",
     "port": 6379,
     "queue": {
-      "syncQueue": {
+      /*"syncQueue": {
         "type": "sync",
         "headers": {},
         "retryCodes": [
@@ -22,7 +22,7 @@
         ],
         "maxRetries": 5,
         "errorWait": 1000
-      }
+      }*/
     }
   }
 }
