@@ -2,21 +2,27 @@
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,
-    "queue": [
-      {
-        "channel": "syncQueue",
-        "type": "sync"
+    "queue": {
+      "syncQueue": {
+        "type": "sync",
+        "headers": {},
+        "retryCodes": [
+          408,
+          503
+        ],
+        "maxRetries": 0,
+        "errorWait": 1000
       },
-      {
-        "channel": "anotherSyncQueue",
-        "type": "sync"
+      "anotherSyncQueue": {
+        "type": "sync",
+        "headers": {},
+        "retryCodes": [
+          408,
+          503
+        ],
+        "maxRetries": 5,
+        "errorWait": 1000
       }
-    ],
-    "retryCodes": [
-      408, 503
-    ],
-    "maxRetries": 5,
-    "errorWait": 1000
-  },
-  "headers": {}
+    }
+  }
 }
