@@ -1,7 +1,7 @@
 'use strict';
 import request from 'request';
 import mkdebug from 'debug';
-import prettyjson from 'prettyjson';
+import {assoc} from 'ramda';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -16,8 +16,9 @@ export const doRequest = msg => request.post({
     error(err);
     return;
   }
-  const resMsg =
-   `Got back statuscode ${res.statusCode} with body ${prettyjson.render(body)}`;
+
+  const full = assoc('status_code', res.statusCode, body);
+  const resMsg = JSON.stringify(full);
 
   if (res.statusCode >= 200 && res.statusCode <= 299) {
     debug(resMsg);
