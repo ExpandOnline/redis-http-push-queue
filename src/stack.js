@@ -3,7 +3,6 @@ import mkdebug from 'debug';
 import config from 'config';
 import {any, equals, curry, assoc} from 'ramda';
 import {doRequest} from './request.js';
-import prettyjson from 'prettyjson';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -16,9 +15,11 @@ const add = msg => {
 };
 
 const runRequest = ({msg, retries}, callback) => {
-  debug(`Handling ${msg.channel} message`);
-  debug(`URI: ${msg.endpoint}`);
-  debug(`Contents: ${prettyjson.render(msg.args)}`);
+  debug(JSON.stringify({
+    message: '[INFO] Handling action',
+    uri: msg.endpoint,
+    body: msg.args
+  }));
   try {
     const response = doRequest(assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
     response.on('response', function(res) {
@@ -35,7 +36,11 @@ const runRequest = ({msg, retries}, callback) => {
       }
     });
   } catch (err) {
-    debug(`Message ${msg.channel} failed with error: ${err}`);
+    debug(JSON.stringify({
+      message: '[ERROR] Action failed',
+      channel: msg.channel,
+      error: err
+    }));
     callback(0);
   }
 };
