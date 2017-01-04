@@ -17,7 +17,9 @@ export const doRequest = msg => request.post({
     return;
   }
 
-  const full = assoc('status_code', res.statusCode, body);
+  const message = res.statusCode >= 300 ? '[ERROR] Bad response' : '[INFO] Response received'
+  const withMessage = assoc('message', message, body)
+  const full = assoc('status_code', res.statusCode, withMessage);
   const resMsg = JSON.stringify(full);
 
   if (res.statusCode >= 200 && res.statusCode <= 299) {
