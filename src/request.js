@@ -1,7 +1,7 @@
 'use strict';
 import request from 'request';
 import mkdebug from 'debug';
-import {assoc} from 'ramda';
+import {merge} from 'ramda';
 
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
@@ -17,10 +17,10 @@ export const doRequest = msg => request.post({
     return;
   }
 
-  const message = res.statusCode >= 300 ? '[ERROR] Bad response' : '[INFO] Response received'
-  const withMessage = assoc('message', message, body)
-  const full = assoc('status_code', res.statusCode, withMessage);
-  const resMsg = JSON.stringify(full);
+  const resMsg = JSON.stringify(merge({
+    message: res.statusCode >= 300 ? '[ERROR] Bad response' : '[INFO] Response received',
+    status_code: res.statusCode
+  }, body));
 
   if (res.statusCode >= 200 && res.statusCode <= 299) {
     debug(resMsg);
