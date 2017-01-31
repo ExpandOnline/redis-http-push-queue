@@ -1,7 +1,7 @@
 'use strict';
 import mkdebug from 'debug';
 import config from 'config';
-import {any, equals, curry, assoc} from 'ramda';
+import {any, equals, curry, assoc, map} from 'ramda';
 import {doRequest} from './request.js';
 
 const debug = mkdebug('redis-http-push-queue:log');
@@ -15,20 +15,31 @@ const add = msg => {
 };
 
 const runRequest = ({msg, retries}, callback) => {
+  const requestId = map(
+      (num) => '1234ABCDEFG'.charAt(num),
+      String(Math.round(10000000000000 * Math.random())).split('')
+    ).join('');
+
   debug(JSON.stringify({
+    requestId,
     message: '[INFO] Handling action',
     uri: msg.endpoint,
-    body: msg.args
+    body: msg.args,
+    channel: msg.channel
   }));
   try {
-    const response = doRequest(assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
+    const response = doRequest(requestId, assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
     response.on('response', function(res) {
       if (any(equals(res.statusCode), config.get(`redis.queue.${msg.channel}.retryCodes`))) {
         if (retries < (config.get(`redis.queue.${msg.channel}.maxRetries`))) {
           queue[msg.channel].unshift({msg, retries: retries + 1});
           callback(config.get(`redis.queue.${msg.channel}.errorWait`));
         } else {
-          error(`Dropped msg for ever and ever.. Contents: ${JSON.stringify(msg)}`);
+          error(JSON.stringify({
+            requestId,
+            message: 'Dropped msg for ever and ever',
+            body: msg
+          }));
           callback(0);
         }
       } else {
@@ -37,6 +48,7 @@ const runRequest = ({msg, retries}, callback) => {
     });
   } catch (err) {
     debug(JSON.stringify({
+      requestId,
       message: '[ERROR] Action failed',
       channel: msg.channel,
       error: err
