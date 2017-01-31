@@ -6,7 +6,7 @@ import {merge} from 'ramda';
 const debug = mkdebug('redis-http-push-queue:log');
 const error = mkdebug('redis-http-push-queue:error');
 
-export const doRequest = msg => request.post({
+export const doRequest = (requestId, msg) => request.post({
   json: true,
   url: msg.endpoint,
   body: msg.args,
@@ -18,6 +18,7 @@ export const doRequest = msg => request.post({
   }
 
   const resMsg = JSON.stringify(merge({
+    requestId,
     message: res.statusCode >= 300 ? '[ERROR] Bad response' : '[INFO] Response received',
     status_code: res.statusCode
   }, body));
