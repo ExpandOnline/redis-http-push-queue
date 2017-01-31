@@ -15,10 +15,7 @@ const add = msg => {
 };
 
 const runRequest = ({msg, retries}, callback) => {
-  const requestId = map(
-      (num) => '1234ABCDEFG'.charAt(num),
-      String(Math.round(10000000000000 * Math.random())).split('')
-    ).join('');
+  const requestId = require('crypto').randomBytes(6).toString('hex');
 
   debug(JSON.stringify({
     requestId,
