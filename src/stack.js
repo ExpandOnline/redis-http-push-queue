@@ -25,7 +25,7 @@ const runRequest = ({msg, retries}, callback) => {
     channel: msg.channel
   }));
   try {
-    const response = doRequest(requestId, assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
+    const response = doRequest(requestId, msg.channel, assoc('headers', config.get(`redis.queue.${msg.channel}.headers`), msg));
     response.on('response', function(res) {
       if (any(equals(res.statusCode), config.get(`redis.queue.${msg.channel}.retryCodes`))) {
         if (retries < (config.get(`redis.queue.${msg.channel}.maxRetries`))) {
