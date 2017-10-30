@@ -1,0 +1,24 @@
+{
+    "redis": {
+        "host": "172.17.0.1",
+        "port": 6379,
+        "queue": [
+            {
+                "channel": "davidActions",
+                "type": "sync"
+            },
+            {
+                "channel": "cronTasks",
+                "type": "sync"
+            }
+        ],
+        "retryCodes": [
+            408, 503
+        ],
+        "maxRetries": 5,
+        "errorWait": 1000
+    },
+    "headers": {
+        "Authorization": "Bearer ..."
+    }
+}

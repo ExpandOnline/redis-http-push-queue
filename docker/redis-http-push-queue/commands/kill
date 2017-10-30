@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${0}")"/. || exit 2
+
+docker kill redis-http-push-queue
+docker rm   redis-http-push-queue
