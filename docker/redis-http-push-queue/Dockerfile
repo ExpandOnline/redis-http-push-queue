@@ -1,4 +1,4 @@
-FROM node:5.11
+FROM node:6.11
 ARG COMMIT_HASH
 
 # Make required directories
