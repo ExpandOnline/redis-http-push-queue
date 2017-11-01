@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${0}")"/. || exit 2
+
+docker kill redis-http-push-queue 2&> /dev/null || true
+docker rm   redis-http-push-queue 2&> /dev/null || true
+docker run -d \
+  --name redis-http-push-queue \
+  --env NODE_ENV=development \
+  --link redis:redis \
+  expandonline/redis-http-push-queue:latest
